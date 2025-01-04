@@ -1,0 +1,120 @@
+{% load emoji_tags %}
+
+<!-- بخش ویرایش پیام -->
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<div class="edit-message-container">
+    <h2>ویرایش پیام</h2>
+    
+    <form method="POST" enctype="multipart/form-data" class="edit-message-form">
+        {% csrf_token %}
+        
+        <textarea name="text" placeholder="پیام خود را ویرایش کنید..." required>{{ message.text }}</textarea>
+        
+        <label for="file-upload" class="file-label">
+            <span>افزودن فایل (اختیاری)</span>
+            <input type="file" id="file-upload" name="file" accept="image/*,video/*,audio/*" />
+        </label>
+    
+        <button type="submit" class="submit-btn">ذخیره تغییرات</button>
+    </form>
+
+    <!-- نمایش فایل قبلی اگر موجود باشد -->
+    {% if message.file %}
+        <p>فایل فعلی: <a href="{{ message.file.url }}" target="_blank" class="file-link">دانلود فایل</a></p>
+    {% endif %}
+</div>
+
+<!-- استایل CSS -->
+<style>
+/* طراحی قالب ویرایش پیام */
+.edit-message-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    resize: none;
+    height: 100px;
+    margin-bottom: 20px;
+}
+
+.file-label {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.submit-btn {
+    background-color: #0088cc;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.submit-btn:hover {
+    background-color: #007bb5;
+}
+
+.file-link {
+    font-size: 14px;
+    color: #0088cc;
+    text-decoration: none;
+}
+
+.file-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<!-- اسکریپت برای ویرایش -->
+<script>
+    // اسکرول به پایین به طور خودکار هنگام بارگذاری صفحه
+    window.addEventListener('load', function() {
+        const messageContainer = document.querySelector('.edit-message-container');
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
+
+    // اعتبارسنجی ارسال پیام در صورت خالی بودن
+    document.querySelector('.submit-btn').addEventListener('click', function(e) {
+        let textarea = document.querySelector('textarea[name="text"]');
+        if (!textarea.value.trim()) {
+            e.preventDefault();
+            alert('لطفاً پیام خود را وارد کنید.');
+        }
+    });
+</script>
+
+
+

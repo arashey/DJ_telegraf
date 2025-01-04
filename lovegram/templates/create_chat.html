@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ساخت چت جدید</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- آیکون‌ها -->
+    <style>
+        /* عمومی */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* طراحی فرم */
+        .create-chat-form {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* عنوان صفحه */
+        .create-chat-form h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* گروه‌های فرم */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: #f9f9f9;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #0088cc;
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        /* دکمه ارسال */
+        .submit-btn {
+            width: 100%;
+            background-color: #0088cc;
+            color: white;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #007bb5;
+        }
+
+        /* استایل آیکون */
+        .icon {
+            font-size: 18px;
+            color: #0088cc;
+            margin-right: 10px;
+        }
+
+        /* واکنش‌گرا برای موبایل */
+        @media (max-width: 768px) {
+            .create-chat-form {
+                padding: 15px;
+            }
+
+            .submit-btn {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .form-group label {
+                font-size: 14px;
+            }
+
+            .form-group input, .form-group select, .form-group textarea {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="create-chat-form">
+        <h1><i class="fas fa-users icon"></i> ساخت چت جدید</h1>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="user">انتخاب کاربر:</label>
+                <select name="user" id="user" required>
+                    <option value="">لطفاً کاربر را انتخاب کنید</option>
+                    <!-- فرض بر این است که لیست کاربران در قالب به درستی ارسال شده است -->
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message">پیام اولیه:</label>
+                <textarea name="message" id="message" placeholder="پیام اولیه خود را وارد کنید..." required></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> ایجاد چت جدید</button>
+        </form>
+    </div>
+</body>
+</html>
+
+

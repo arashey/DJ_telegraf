@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ساخت گروه جدید</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* فونت و تنظیمات عمومی */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e5e5e5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* کانتینر اصلی صفحه */
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* عنوان صفحه */
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        /* فرم ساخت گروه */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: #f5f5f5;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            background-color: #fff;
+            border-color: #0088cc;
+            outline: none;
+        }
+
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .user-list li {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-list li:hover {
+            background-color: #f1f1f1;
+        }
+
+        .user-list label {
+            margin-left: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        button {
+            background-color: #0088cc;
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #007bb5;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .back-link a {
+            color: #0088cc;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* واکنش‌گرا برای موبایل */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            input[type="text"], button {
+                font-size: 14px;
+            }
+
+            .user-list li {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ساخت گروه جدید</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="group-name">نام گروه</label>
+                <input type="text" id="group-name" name="group_name" placeholder="نام گروه را وارد کنید..." required>
+            </div>
+
+            <h3>اعضای گروه را انتخاب کنید:</h3>
+            {% if users %}
+                <ul class="user-list">
+                    {% for user in users %}
+                        <li>
+                            <input type="checkbox" name="members" value="{{ user.id }}">
+                            <label>{{ user.username }}</label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>کاربری برای اضافه کردن به گروه وجود ندارد.</p>
+            {% endif %}
+            
+            <button type="submit">ساخت گروه</button>
+        </form>
+
+        <div class="back-link">
+            <a href="{% url 'chat_list' %}">بازگشت به لیست چت‌ها</a>
+        </div>
+    </div>
+</body>
+</html>
+
+
+

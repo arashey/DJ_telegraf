@@ -1,0 +1,332 @@
+{% load static %}
+<!-- اضافه کردن لینک Font Awesome -->
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<!-- نوار بالای صفحه -->
+<div class="top-nav">
+    <a href="{% url 'create_group' %}" class="nav-link">
+        <i class="fas fa-users icon"></i> ساخت گروه جدید
+    </a>
+    <a href="{% url 'find_user_and_create_chat' %}" class="nav-link">
+        <i class="fas fa-comment-alt icon"></i> ارسال پیام به کاربر جدید
+    </a>
+    <a href="{% url 'register' %}" class="nav-link">
+        <i class="fas fa-user-plus icon"></i>  ایجاد حساب کاربری جدید
+    </a>
+    <a href="{% url 'create_edit_profile' %}" class="nav-link">
+        <i class="fas fa-user-circle icon"></i> ویرایش پروفایل
+    </a>
+</div>
+
+<h2>چت‌های شما:</h2>
+<ul class="chat-list">
+    {% for chat in chats %}
+        <li class="chat-item" id="chat-{{ chat.id }}">
+            <a href="{% url 'chat_detail' chat.id %}" class="chat-link">
+                <div class="chat-info">
+                    {% if chat.is_group %}
+                        <span class="chat-name">{{ chat.name }} <span class="group-tag">(گروه)</span></span>
+                    {% else %}
+                        <div class="chat-participant">
+                            <!-- افزودن پروفایل -->
+                            <div class="profile-picture-container">
+                                {% if chat.other_participant.profile.avatar %}
+                                    <img src="{{ chat.other_participant.profile.avatar.url }}" alt="Profile" class="profile-picture">
+                                {% else %}
+                                    <img src="{% static 'default-avatar.png' %}" alt="Default Profile" class="profile-picture">
+                                {% endif %}
+                                <span class="status-indicator {% if chat.other_participant.is_online %}online{% else %}offline{% endif %}"></span>
+                            </div>
+                            <span>{{ chat.other_participant.username|default:"کاربر یافت نشد" }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% if chat.other_participant %}
+                <span class="status">
+                    {% if chat.other_participant.is_online %}
+                        <span class="online-status">آنلاین</span>
+                    {% else %}
+                        <span class="offline-status">آفلاین</span>
+                    {% endif %}
+                </span>
+            {% endif %}
+
+            <!-- فرم حذف چت -->
+            <form action="{% url 'delete_chat' chat.id %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="danger-link" onclick="return confirm('آیا مطمئن هستید که می‌خواهید این چت را حذف کنید؟')">حذف چت</button>
+            </form>
+        </li>
+    {% empty %}
+        <li class="no-chats">هیچ چتی برای شما وجود ندارد.</li>
+    {% endfor %}
+</ul>
+
+<!-- استایل CSS -->
+<style>
+/* عمومی */
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 0;
+}
+
+/* نوار بالای صفحه */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0088cc;
+    padding: 10px 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    flex-wrap: wrap; /* بهبود نمایش در موبایل */
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link:hover {
+    background-color: #0077b3;
+}
+
+.icon {
+    font-size: 20px;
+    margin-right: 8px; /* فاصله آیکون از متن */
+}
+
+/* لیست چت‌ها */
+.chat-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 80px; /* برای جلوگیری از پوشش نوار بالا */
+}
+
+.chat-item {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.chat-item:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+}
+
+/* تصویر پروفایل با نشان وضعیت */
+.profile-picture-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-picture {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff; /* جدا کننده */
+}
+
+.status-indicator.online {
+    background-color: #4caf50;
+}
+
+.status-indicator.offline {
+    background-color: #f44336;
+}
+
+.chat-link {
+    display: block;
+    color: #333;
+    font-size: 18px;
+    text-decoration: none;
+    font-weight: bold;
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.chat-name {
+    font-size: 18px;
+    color: #333;
+}
+
+.group-tag {
+    font-size: 13px;
+    color: #888;
+}
+
+.status {
+    font-size: 12px;
+    color: #777;
+}
+
+.online-status {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.offline-status {
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* پیام‌های خالی */
+.no-chats {
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* طراحی واکنش‌گرا */
+@media (max-width: 768px) {
+    /* تنظیم نوار بالا برای موبایل */
+    .top-nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* تنظیم اندازه فونت در موبایل */
+    .nav-link {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    /* تنظیم ابعاد تصویر پروفایل */
+    .profile-picture {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* تغییر در لیست چت‌ها */
+    .chat-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .chat-link {
+        font-size: 16px;
+        max-width: 100%;
+    }
+
+    .chat-name {
+        font-size: 16px;
+    }
+
+    /* بهبود وضعیت آنلاین و آفلاین */
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+    }
+}
+</style>
+<script>// این کد باید در فایلی که با جاوا اسکریپت درخواست‌های AJAX ارسال می‌کند قرار گیرد
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            var cookies = document.cookie.split(";");
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // اضافه کردن توکن CSRF به هدر هر درخواست AJAX
+    var csrftoken = getCookie('csrftoken');
+    
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+</script>
+<script>setInterval(function() {
+    $.ajax({
+        url: "/update_last_activity/",
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrftoken
+        },
+        success: function(response) {
+            console.log("وضعیت فعالیت بروز شد");
+        },
+        error: function(error) {
+            console.error("خطا در بروز رسانی وضعیت فعالیت:", error);
+        }
+    });
+}, 10000); // هر 10 ثانیه
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,419 @@
+{% load static %}
+{% load emoji_tags %}
+
+<!-- بخش نمایش پیام‌ها -->
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<div class="chat-container">
+    <!-- نوار بالای چت (نام فرد و تصویر پروفایل) -->
+    <div class="chat-header">
+        <div class="user-profile">
+            <a href="{% url 'profile_detail' user_id=chat_partner.id %}">
+                <div class="profile-picture-container">
+                    {% if chat_partner.profile.avatar %}
+                        <img src="{{ chat_partner.profile.avatar.url }}" alt="Profile" class="profile-picture">
+                    {% else %}
+                        <img src="{% static 'default-avatar.png' %}" alt="Default Profile" class="profile-picture">
+                    {% endif %}
+                    <span class="status-indicator {% if chat_partner.is_user_online %}online{% else %}offline{% endif %}"></span>
+                </div>
+            </a>
+            <div class="user-info">
+                <strong>{{ chat_partner.username }}</strong>
+                <span class="status-text">
+                    {% if chat_partner.is_user_online %}
+                        آنلاین
+                    {% else %}
+                        آفلاین
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>    
+
+    <!-- بخش نمایش پیام‌ها -->
+    <div class="messages">
+        {% for message in messages %}
+            <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+                <div class="message-header">
+                    <strong>
+                        {% if message.sender == user %}
+                            شما
+                        {% else %}
+                            {{ message.sender.username }} <!-- نمایش نام فرستنده پیام -->
+                        {% endif %}
+                    </strong>
+                    <span class="timestamp">{{ message.timestamp|date:"H:i" }}</span>
+                </div>
+                <p class="message-text">{{ message.text|emoji_filter }}</p>
+
+                {% if message.sender == user %}
+                    {% if message.status == 'sent' %}
+                        <span class="status sent"><i class="fa fa-check"></i></span>  <!-- تیک برای ارسال‌شده -->
+                    {% elif message.status == 'read' %}
+                        <span class="status read"><i class="fa fa-check-double"></i></span>  <!-- تیک دوتایی برای خوانده‌شده -->
+                    {% endif %}
+                {% endif %}
+
+                {% if message.file %}
+                    <!-- نمایش آیکون دانلود فایل -->
+                    <p>
+                        <a href="{{ message.file.url }}" target="_blank" class="file-icon">
+                            <i class="fa fa-file-download"></i> دانلود فایل
+                        </a>
+                    </p>
+                {% endif %}
+
+                {% if message.sender == user %}
+                    <div class="message-actions">
+                        <a href="{% url 'edit_message' message.id %}" class="edit-link">ویرایش</a>
+                        <a href="{% url 'delete_message' message.id %}" class="delete-link">حذف</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- فرم ارسال پیام -->
+    <form method="POST" enctype="multipart/form-data" class="message-form">
+        {% csrf_token %}
+        <div class="message-input-container">
+            <textarea name="text" placeholder="پیام خود را بنویسید..." required></textarea>
+            
+            <!-- حذف بخش ایموجی‌ها -->
+
+            <label for="file-upload" class="file-label">
+                <span>افزودن فایل</span>
+                <input type="file" id="file-upload" name="file" accept="image/*,video/*,audio/*" />
+            </label>
+            <button type="submit" class="send-btn">ارسال</button>
+        </div>
+    </form>
+</div>
+
+<!-- استایل CSS -->
+<style>
+/* عمومی */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e5e5e5;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* بخش چت */
+.chat-container {
+    width: 100%;
+    height: 100%;
+    max-width: 600px;
+    margin: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 90%;
+    position: relative;
+}
+
+/* نوار بالای چت (نام فرد و تصویر پروفایل) */
+.chat-header {
+    display: flex;
+    align-items: center;
+    background-color: rgb(2, 126, 188);
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+}
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.chat-header strong {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* کادر تصویر پروفایل */
+.profile-picture-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* دایره وضعیت کنار پروفایل */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ffffff; /* کادر سفید برای برجسته کردن دایره */
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.status-indicator.online {
+    background-color: #28a745; /* رنگ سبز برای آنلاین */
+}
+
+.status-indicator.offline {
+    background-color: #dc3545; /* رنگ قرمز برای آفلاین */
+}
+
+/* اطلاعات کاربر */
+.user-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.user-info strong {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.status-text {
+    font-size: 12px;
+    color: #bbb;
+}
+
+
+
+
+/* نمایش پیام‌ها */
+.messages {
+    max-height: 100%;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.message {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.sent {
+    background-color: #d1ffd6;
+    align-self: flex-end;
+    margin-right: 20px;
+}
+
+.received {
+    background-color: #f1f1f1;
+    align-self: flex-start;
+    margin-left: 20px;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #888;
+}
+
+.timestamp {
+    color: #bbb;
+}
+
+.message-text {
+    font-size: 16px;
+    color: #333;
+    margin: 10px 0;
+}
+
+.status {
+    font-size: 14px;
+    color: #777;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.status i {
+    color: #0088cc;
+}
+
+.file-icon {
+    font-size: 14px;
+    color: #0088cc;
+    text-decoration: none;
+}
+
+.file-icon:hover {
+    text-decoration: underline;
+}
+
+.message-actions {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.edit-link, .delete-link {
+    color: #0088cc;
+    text-decoration: none;
+}
+
+.edit-link:hover, .delete-link:hover {
+    text-decoration: underline;
+}
+
+/* فرم ارسال پیام */
+.message-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    resize: none;
+    height: 60px;
+}
+
+.file-label {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: #333;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.send-btn {
+    background-color: #0088cc;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.send-btn:hover {
+    background-color: #007bb5;
+}
+
+/* واکنش‌گرا برای موبایل */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+    }
+
+    textarea {
+        height: 50px;
+        font-size: 14px;
+    }
+
+    .send-btn {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
+</style>
+
+<!-- اسکریپت برای افزودن فایل -->
+<script>
+    document.querySelector('.send-btn').addEventListener('click', function(e) {
+        let textarea = document.querySelector('textarea[name="text"]');
+        if (!textarea.value.trim()) {
+            e.preventDefault();
+            alert('لطفاً پیام خود را وارد کنید.');
+        }
+    });
+</script>
+<script>
+    // اسکرول به آخرین پیام هنگام ارسال پیام جدید
+    document.querySelector('.message-form').addEventListener('submit', function() {
+        // بعد از ارسال پیام، به پایین صفحه اسکرول می‌کنیم
+        setTimeout(function() {
+            const messageContainer = document.querySelector('.messages');
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }, 100); // زمان تاخیر برای اطمینان از ارسال پیام
+    });
+
+    // اسکرول به پایین به طور خودکار هنگام بارگذاری صفحه
+    window.addEventListener('load', function() {
+        const messageContainer = document.querySelector('.messages');
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+<h1>پروفایل کاربر</h1>
+
+{% if profile %}
+    <p>بیو: {{ profile.bio|default:"بیو ثبت نشده است." }}</p>
+    {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar" />
+    {% else %}
+        <p>آواتار ثبت نشده است.</p>
+    {% endif %}
+{% else %}
+    <p>پروفایل این کاربر خالی است.</p>
+    <a href="{% url 'create_edit_profile' %}">ایجاد پروفایل</a>
+{% endif %}
+
+
