@@ -6,5 +6,5 @@ register = template.Library()
 
 @register.filter
 def emoji_filter(value):
-    return emoji.emojize(value, use_aliases=True)
+    return emoji.emojize(value)
 
